@@ -1,17 +1,49 @@
-### Streamy Base Domain Associations Blueprint
+# Streamy Core Domain Structural Architecture
+
+## 1. Complex System Relationships Analysis
+
+This structural document establishes core hierarchies, lifecycle coupling, and cardinality rules.
+
+## 2. Comprehensive Production Class Diagram
 
 ```mermaid
 classDiagram
-    class Title {
-        +String name
-        +int releaseYear
-        +playMedia() Boolean
-    }
+direction TB
+class Title {
+    <<abstract>>
+    +String name
+    +int releaseYear
+    +playMedia() Boolean
+}
+class Film {
+    +int lengthMinutes
+}
+class TVShow {
+    +int seasonsCount
+}
+class Season {
+    +int seasonNumber
+}
+class Episode {
+    +String episodeTitle
+    +int durationSeconds
+}
+class Review {
+    +int ratingStars
+    +String reviewText
+}
+class Actor {
+    +String fullName
+}
+class Genre {
+    +String genreName
+}
 
-    class Genre {
-        +String genreName
-        +getMediaCatalog() List
-    }
+Title "0..*" -- "1..*" Genre : categorized_under
+TVShow "1" -- "0..*" Season : owns
+Title "1" -- "0..*" Review : receives
+Season "1" -- "1..*" Episode : contains
+Title "0..*" -- "0..*" Actor : features
 
-    Title -- Genre : categorized_under     
-    
+Film --|> Title : extends
+TVShow --|> Title : extends
