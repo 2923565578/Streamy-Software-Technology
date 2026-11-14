@@ -1,18 +1,13 @@
-name: Deploy Mermaid Docs
+name: Convert And Deploy Mermaid Diagrams
 
 on:
   push:
     branches: ["main"]
-  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
 
 jobs:
   build:
@@ -21,25 +16,27 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Install Puppeteer Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgbm1 libasound2 libatk1.0-0 \
+          libatk-bridge2.0-0 libcups2 libdrm2 libxcomposite1 \
+          libxdamage1 libxfixes3 libxrandr2 libxkbcommon0 \
+          libpango-1.0-0 libcairo2 libnss3 libnspr4
 
-      - name: Install Mermaid CLI
-        run: npm install -g @mermaid-js/mermaid-cli
-
-      - name: Render Mermaid Diagrams
+      - name: Generate Diagrams In Markdown Files
         run: |
           cd docs
-          echo '{"args": ["--no-sandbox"]}' > puppeteer-config.json
-          for file in $(find . -name '*.md'); do
-            [ -f "$file" ] || continue
-            # 输出到独立文件，避免原地覆盖导致的崩溃
-            mmdc -i "$file" -o "$file.out.md" -p puppeteer-config.json
-            mv "$file.out.md" "$file"
+          for file in *.md; do
+            # 使用临时文件，避免循环中读写同一文件
+            npx -y -p @mermaid-js/mermaid-cli mmdc \
+              --input "$file" \
+              --output "${file%.md}.rendered.md"
           done
-          rm puppeteer-config.json
+          # 用生成的新文件替换原始文件
+          for file in *.rendered.md; do
+            mv "$file" "${file%.rendered.md}.md"
+          done
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
