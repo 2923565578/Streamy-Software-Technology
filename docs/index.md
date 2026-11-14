@@ -10,7 +10,7 @@ Streamy is an object-oriented backend media management catalog designed to serve
 
 The diagram below maps out the explicit boundary conditions separating internal Python engine logic from external architectural infrastructure:
 
-```mermaid
+<pre class="mermaid">
 ---
 title: Streamy Application System Boundaries
 ---
@@ -30,3 +30,10 @@ flowchart LR
     Core -- "Queries" --> Tax
     Core -- "Computes Metrics" --> Calc
     UI -- "Streams Video Stream" --> CDN
+</pre>
+
+<!-- 这段脚本负责把上面的 <pre> 标签渲染成图表 -->
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+  mermaid.initialize({ startOnLoad: true, theme: 'default' });
+</script>
