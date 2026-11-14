@@ -62,4 +62,7 @@ erDiagram
     EPISODE }|..|| SEASON: "contains"
     REVIEW }o..o| TITLE: "made against"
     REVIEW }o..o| EPISODE: "made against"
+ feature/system-delivery
     REVIEW }o..o| SEASON: "made against"
+    REVIEW }o..o| SEASON: "made against"
+ feature/domain-architecture
