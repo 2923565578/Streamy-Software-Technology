@@ -1,55 +1,26 @@
-name: Convert And Deploy Mermaid Diagrams
-
+name: Deploy Jekyll site with Mermaid support
 on:
   push:
     branches: ["main"]
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Install Puppeteer Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgbm1 libasound2 libatk1.0-0 \
-          libatk-bridge2.0-0 libcups2 libdrm2 libxcomposite1 \
-          libxdamage1 libxfixes3 libxrandr2 libxkbcommon0 \
-          libpango-1.0-0 libcairo2 libnss3 libnspr4
-
-      - name: Generate Diagrams In Markdown Files
-        run: |
-          cd docs
-          for file in *.md; do
-            # 使用临时文件，避免循环中读写同一文件
-            npx -y -p @mermaid-js/mermaid-cli mmdc \
-              --input "$file" \
-              --output "${file%.md}.rendered.md"
-          done
-          # 用生成的新文件替换原始文件
-          for file in *.rendered.md; do
-            mv "$file" "${file%.rendered.md}.md"
-          done
-
       - name: Setup Pages
         uses: actions/configure-pages@v4
-
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./docs
           destination: ./_site
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
-
   deploy:
     environment:
       name: github-pages
