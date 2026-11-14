@@ -21,24 +21,24 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Render Mermaid Diagrams using Docker
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Mermaid CLI
+        run: npm install -g @mermaid-js/mermaid-cli
+
+      - name: Render Mermaid Diagrams
         run: |
           cd docs
-          # 创建无沙箱配置文件
-          echo '{"args": ["--no-sandbox", "--disable-setuid-sandbox"]}' > puppeteer-config.json
-          
+          echo '{"args": ["--no-sandbox"]}' > puppeteer-config.json
           for file in $(find . -name '*.md'); do
             [ -f "$file" ] || continue
-            echo "Rendering: $file"
-            
-            # 使用官方 Docker 镜像渲染，映射当前目录，并指定用户避免文件权限问题
-            docker run --rm -u $(id -u):$(id -g) -v $(pwd):/data minlag/mermaid-cli -i "/data/$file" -o "/data/$file.tmp" -p /data/puppeteer-config.json || exit 1
-            
-            # 替换原文件
-            mv "$file.tmp" "$file"
+            # 输出到独立文件，避免原地覆盖导致的崩溃
+            mmdc -i "$file" -o "$file.out.md" -p puppeteer-config.json
+            mv "$file.out.md" "$file"
           done
-          
-          # 删除临时配置
           rm puppeteer-config.json
 
       - name: Setup Pages
