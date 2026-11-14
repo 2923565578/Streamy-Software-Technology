@@ -1,40 +1,41 @@
-name: Convert And Deploy Mermaid Diagrams In Markdown
+name: Deploy Mermaid Docs
 
 on:
   push:
-    branches: ["feature/domain-architecture"] # <--- 这里修改成了你的默认分支
+    branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
-
+        uses: actions/checkout@v4
       - name: Generate Diagrams In Markdown Files
         run: |
           cd docs
           for file in $(find . -name '*.md'); do
             [ -f "$file" ] || continue
-            npx -p @mermaid-js/mermaid-cli mmdc --input "$file" --output "$file"
+            npx -y -p @mermaid-js/mermaid-cli mmdc --input "$file" --output "$file"
           done
-
       - name: Setup Pages
-        uses: actions/configure-pages@v2
-
+        uses: actions/configure-pages@v4
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./docs
           destination: ./_site
-
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
 
   deploy:
     environment:
@@ -45,4 +46,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v4
